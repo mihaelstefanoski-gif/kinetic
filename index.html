@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kinetic & Potential Energy Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #fef9c3 50%, #ffedd5 100%);
+      min-height: 100vh;
+    }
+    input[type="range"] {
+      accent-color: #f97316;
+    }
+    canvas {
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased p-4 md:p-8">
+
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-lg border-2 border-amber-300 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-extrabold text-2xl shadow-md">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
+            Energy Coaster Lab
+          </h1>
+          <p class="text-slate-600 text-sm md:text-base font-medium">
+            Watch Potential Energy transform into Kinetic Energy in real time!
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="px-4 py-1.5 rounded-full bg-sky-100 text-sky-700 font-bold text-xs uppercase tracking-wider border border-sky-300">
+          Gravity: 9.8 m/s²
+        </span>
+        <span class="px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs uppercase tracking-wider border border-emerald-300">
+          Frictionless Track
+        </span>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-8 bg-white rounded-3xl p-4 md:p-6 shadow-xl border-2 border-sky-300 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span>
+            Interactive Coaster Track
+          </h2>
+          <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+            Drag slider or drop ball
+          </span>
+        </div>
+
+        <div id="canvasContainer" class="relative w-full h-72 sm:h-80 md:h-96 rounded-2xl overflow-hidden border-2 border-sky-200 bg-gradient-to-b from-sky-200 via-sky-100 to-amber-50">
+          <canvas id="simCanvas" class="w-full h-full block"></canvas>
+        </div>
+
+        <div class="mt-5 flex flex-wrap items-center justify-between gap-4 bg-amber-50/80 p-4 rounded-2xl border border-amber-200">
+          <div class="flex items-center gap-3">
+            <button id="playPauseBtn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
+              <span id="playIcon">⏸</span>
+              <span id="playText">Pause</span>
+            </button>
+            <button id="resetBtn" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
+              <span>↺</span>
+              <span>Reset</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-6 text-sm font-bold">
+            <div class="bg-white px-4 py-2 rounded-xl border border-sky-200 shadow-sm">
+              <span class="text-slate-500 block text-xs">Current Height</span>
+              <span id="liveHeight" class="text-sky-600 text-base">10.0 m</span>
+            </div>
+            <div class="bg-white px-4 py-2 rounded-xl border border-orange-200 shadow-sm">
+              <span class="text-slate-500 block text-xs">Current Speed</span>
+              <span id="liveSpeed" class="text-orange-600 text-base">0.0 m/s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-4 space-y-6 flex flex-col justify-between">
+        <div class="bg-white rounded-3xl p-6 shadow-xl border-2 border-orange-300 space-y-5">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+            Experiment Controls
+          </h2>
+
+          <div class="space-y-2 bg-orange-50/70 p-4 rounded-2xl border border-orange-200">
+            <div class="flex justify-between items-center">
+              <label for="massSlider" class="font-bold text-slate-700 text-sm">Ball Mass (m)</label>
+              <span id="massVal" class="px-3 py-1 rounded-lg bg-orange-500 text-white font-extrabold text-sm">5.0 kg</span>
+            </div>
+            <input id="massSlider" type="range" min="1" max="10" step="0.5" value="5" class="w-full h-2.5 bg-orange-200 rounded-lg cursor-pointer" />
+            <div class="flex justify-between text-xs font-semibold text-slate-400">
+              <span>1 kg</span>
+              <span>5 kg</span>
+              <span>10 kg</span>
+            </div>
+          </div>
+
+          <div class="space-y-2 bg-sky-50/70 p-4 rounded-2xl border border-sky-200">
+            <div class="flex justify-between items-center">
+              <label for="heightSlider" class="font-bold text-slate-700 text-sm">Starting Height (h)</label>
+              <span id="heightVal" class="px-3 py-1 rounded-lg bg-sky-500 text-white font-extrabold text-sm">10.0 m</span>
+            </div>
+            <input id="heightSlider" type="range" min="2" max="12" step="0.5" value="10" class="w-full h-2.5 bg-sky-200 rounded-lg cursor-pointer" />
+            <div class="flex justify-between text-xs font-semibold text-slate-400">
+              <span>2 m</span>
+              <span>7 m</span>
+              <span>12 m</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-xl border-2 border-emerald-300 space-y-4 flex-1 flex flex-col justify-center">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+            Live Energy Monitor
+          </h2>
+
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-sm font-bold mb-1">
+                <span class="text-sky-600">Potential Energy (PE)</span>
+                <span id="peReadout" class="text-slate-800">490.0 J</span>
+              </div>
+              <div class="w-full h-5 bg-sky-100 rounded-full overflow-hidden p-0.5 border border-sky-200">
+                <div id="peBar" class="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full transition-all duration-75" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-sm font-bold mb-1">
+                <span class="text-orange-600">Kinetic Energy (KE)</span>
+                <span id="keReadout" class="text-slate-800">0.0 J</span>
+              </div>
+              <div class="w-full h-5 bg-orange-100 rounded-full overflow-hidden p-0.5 border border-orange-200">
+                <div id="keBar" class="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-75" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100">
+              <div class="flex justify-between text-sm font-extrabold mb-1">
+                <span class="text-emerald-600">Total Energy (PE + KE)</span>
+                <span id="totalReadout" class="text-emerald-700">490.0 J</span>
+              </div>
+              <div class="w-full h-5 bg-emerald-100 rounded-full overflow-hidden p-0.5 border border-emerald-200">
+                <div id="totalBar" class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-75" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-2 border-sky-300 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div class="w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-3xl font-extrabold shrink-0 border border-sky-200">
+          ⛰️
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-3 flex-wrap">
+            <h3 class="text-xl font-extrabold text-sky-700">Potential Energy (PE)</h3>
+            <span class="px-3 py-1 rounded-xl bg-sky-500 text-white font-mono font-bold text-sm shadow-sm">
+              PE = m × g × h
+            </span>
+          </div>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            <strong>Stored energy</strong> based on height! The higher you lift the ball above the ground (<em>h</em>) or the heavier it is (<em>m</em>), the more gravitational potential energy it stores.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-lg border-2 border-orange-300 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div class="w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-3xl font-extrabold shrink-0 border border-orange-200">
+          🚀
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-3 flex-wrap">
+            <h3 class="text-xl font-extrabold text-orange-600">Kinetic Energy (KE)</h3>
+            <span class="px-3 py-1 rounded-xl bg-orange-500 text-white font-mono font-bold text-sm shadow-sm">
+              KE = ½ × m × v²
+            </span>
+          </div>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            <strong>Energy of motion!</strong> As the ball rolls down the hill, stored potential energy converts directly into speed (<em>v</em>), reaching maximum kinetic energy at the lowest dip.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvasContainer');
+
+    const massSlider = document.getElementById('massSlider');
+    const heightSlider = document.getElementById('heightSlider');
+    const massVal = document.getElementById('massVal');
+    const heightVal = document.getElementById('heightVal');
+
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const playText = document.getElementById('playText');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const peReadout = document.getElementById('peReadout');
+    const keReadout = document.getElementById('keReadout');
+    const totalReadout = document.getElementById('totalReadout');
+    const peBar = document.getElementById('peBar');
+    const keBar = document.getElementById('keBar');
+    const totalBar = document.getElementById('totalBar');
+    const liveHeight = document.getElementById('liveHeight');
+    const liveSpeed = document.getElementById('liveSpeed');
+
+    const g = 9.8;
+    const maxTrackHeight = 12;
+    const maxPossibleEnergy = 10 * g * 12;
+
+    let mass = parseFloat(massSlider.value);
+    let startHeight = parseFloat(heightSlider.value);
+    let isPlaying = true;
+
+    let ballXNorm = 0.08;
+    let direction = 1;
+    let lastTimestamp = null;
+
+    function getTrackHeightAt(xNorm) {
+      const u = (xNorm - 0.5) * 2;
+      const baseValley = 12 * Math.pow(u, 2);
+      const middleBump = 2.5 * Math.exp(-Math.pow((xNorm - 0.52) / 0.14, 2));
+      return Math.min(maxTrackHeight, Math.max(0.2, baseValley * 0.85 + middleBump));
+    }
+
+    function findStartXForHeight(targetH) {
+      let bestX = 0.08;
+      let minDiff = Infinity;
+      for (let x = 0.04; x <= 0.45; x += 0.001) {
+        const diff = Math.abs(getTrackHeightAt(x) - targetH);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestX = x;
+        }
+      }
+      return bestX;
+    }
+
+    function resetSimulation() {
+      startHeight = parseFloat(heightSlider.value);
+      ballXNorm = findStartXForHeight(startHeight);
+      direction = 1;
+    }
+
+    function resizeCanvas() {
+      const rect = container.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function updateReadouts(currentH, currentV) {
+      const totalE = mass * g * startHeight;
+      const pe = Math.max(0, Math.min(totalE, mass * g * currentH));
+      const ke = Math.max(0, totalE - pe);
+
+      peReadout.textContent = `${pe.toFixed(1)} J`;
+      keReadout.textContent = `${ke.toFixed(1)} J`;
+      totalReadout.textContent = `${totalE.toFixed(1)} J`;
+
+      peBar.style.width = `${(pe / maxPossibleEnergy) * 100}%`;
+      keBar.style.width = `${(ke / maxPossibleEnergy) * 100}%`;
+      totalBar.style.width = `${(totalE / maxPossibleEnergy) * 100}%`;
+
+      liveHeight.textContent = `${currentH.toFixed(1)} m`;
+      liveSpeed.textContent = `${currentV.toFixed(1)} m/s`;
+    }
+
+    function drawScene(width, height) {
+      ctx.clearRect(0, 0, width, height);
+
+      const padX = 36;
+      const padTop = 32;
+      const padBottom = 38;
+      const usableW = width - padX * 2;
+      const usableH = height - padTop - padBottom;
+
+      const toCanvasX = (xNorm) => padX + xNorm * usableW;
+      const toCanvasY = (hMeters) => height - padBottom - (hMeters / maxTrackHeight) * usableH;
+
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.arc(width - 65, 52, 24, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(14, 165, 233, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = '#0284c7';
+
+      for (let h = 0; h <= maxTrackHeight; h += 3) {
+        const y = toCanvasY(h);
+        ctx.beginPath();
+        ctx.moveTo(padX, y);
+        ctx.lineTo(width - padX, y);
+        ctx.stroke();
+        ctx.fillText(`${h}m`, 8, y + 4);
+      }
+
+      const startY = toCanvasY(startHeight);
+      ctx.save();
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padX, startY);
+      ctx.lineTo(width - padX, startY);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.fillStyle = '#ea580c';
+      ctx.font = '700 11px Inter, sans-serif';
+      ctx.fillText(`Max Height (${startHeight.toFixed(1)}m)`, padX + 6, startY - 6);
+
+      ctx.beginPath();
+      ctx.moveTo(toCanvasX(0.03), height - padBottom);
+      for (let i = 0; i <= 120; i++) {
+        const xNorm = 0.03 + (i / 120) * 0.94;
+        ctx.lineTo(toCanvasX(xNorm), toCanvasY(getTrackHeightAt(xNorm)));
+      }
+      ctx.lineTo(toCanvasX(0.97), height - padBottom);
+      ctx.closePath();
+
+      const hillGrad = ctx.createLinearGradient(0, padTop, 0, height - padBottom);
+      hillGrad.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
+      hillGrad.addColorStop(1, 'rgba(16, 185, 129, 0.25)');
+      ctx.fillStyle = hillGrad;
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const xNorm = 0.03 + (i / 120) * 0.94;
+        const cx = toCanvasX(xNorm);
+        const cy = toCanvasY(getTrackHeightAt(xNorm));
+        if (i === 0) ctx.moveTo(cx, cy);
+        else ctx.lineTo(cx, cy);
+      }
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(0, height - padBottom, width, padBottom);
+
+      const currentH = Math.min(startHeight, getTrackHeightAt(ballXNorm));
+      const bx = toCanvasX(ballXNorm);
+      const by = toCanvasY(currentH);
+      const radius = 11 + mass * 1.1;
+
+      ctx.beginPath();
+      ctx.arc(bx, by - radius + 2, radius + 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(249, 115, 22, 0.25)';
+      ctx.fill();
+
+      const ballGrad = ctx.createRadialGradient(bx - radius * 0.3, by - radius - radius * 0.3, 2, bx, by - radius, radius);
+      ballGrad.addColorStop(0, '#fde047');
+      ballGrad.addColorStop(0.5, '#f97316');
+      ballGrad.addColorStop(1, '#ea580c');
+
+      ctx.beginPath();
+      ctx.arc(bx, by - radius + 2, radius, 0, Math.PI * 2);
+      ctx.fillStyle = ballGrad;
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${mass}kg`, bx, by - radius + 6);
+      ctx.textAlign = 'left';
+    }
+
+    function step(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+      lastTimestamp = timestamp;
+
+      const currentH = Math.min(startHeight, getTrackHeightAt(ballXNorm));
+      const deltaH = Math.max(0, startHeight - currentH);
+      const speed = Math.sqrt(2 * g * deltaH);
+
+      if (isPlaying) {
+        const eps = 0.002;
+        const h1 = getTrackHeightAt(ballXNorm - eps);
+        const h2 = getTrackHeightAt(ballXNorm + eps);
+        const slope = (h2 - h1) / (2 * eps);
+        const cosTheta = 1 / Math.sqrt(1 + Math.pow(slope / 14, 2));
+
+        const effectiveSpeed = Math.max(speed, 0.45);
+        const dxNorm = direction * (effectiveSpeed * cosTheta * dt) / 16.5;
+        ballXNorm += dxNorm;
+
+        const newH = getTrackHeightAt(ballXNorm);
+        if (newH >= startHeight) {
+          ballXNorm -= dxNorm;
+          direction *= -1;
+        }
+      }
+
+      const displayH = Math.min(startHeight, getTrackHeightAt(ballXNorm));
+      const displayV = Math.sqrt(2 * g * Math.max(0, startHeight - displayH));
+
+      updateReadouts(displayH, displayV);
+
+      const rect = container.getBoundingClientRect();
+      drawScene(rect.width, rect.height);
+
+      requestAnimationFrame(step);
+    }
+
+    massSlider.addEventListener('input', () => {
+      mass = parseFloat(massSlider.value);
+      massVal.textContent = `${mass.toFixed(1)} kg`;
+    });
+
+    heightSlider.addEventListener('input', () => {
+      startHeight = parseFloat(heightSlider.value);
+      heightVal.textContent = `${startHeight.toFixed(1)} m`;
+      resetSimulation();
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      playIcon.textContent = isPlaying ? '⏸' : '▶';
+      playText.textContent = isPlaying ? 'Pause' : 'Play';
+    });
+
+    resetBtn.addEventListener('click', () => {
+      resetSimulation();
+      if (!isPlaying) {
+        isPlaying = true;
+        playIcon.textContent = '⏸';
+        playText.textContent = 'Pause';
+      }
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+
+    window.onload = function () {
+      resizeCanvas();
+      resetSimulation();
+      requestAnimationFrame(step);
+    };
+  </script>
+</body>
+</html>
